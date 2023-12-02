@@ -13,7 +13,7 @@
 
 
 
-<title>c++网络编程 | Hexo</title>
+<title>Socket套接字函数 | Hexo</title>
 
 
 
@@ -127,11 +127,76 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">c++网络编程</h1>
+            <h1 class="post-title">Socket套接字函数</h1>
             
                 <div class="post-meta">
                     
@@ -149,7 +214,74 @@
         </header>
 
         <div class="post-content">
-            
+            <h1 id="Socket套接字函数"><a href="#Socket套接字函数" class="headerlink" title="Socket套接字函数"></a>Socket套接字函数</h1><p>在使用scoket进行网络编程时应首先包含#include&lt;winsock2.h&gt;（Windows环境下）头文件，linux环境可以通过man socket命令在终端查询所在的头文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">uersname:~$ man socket</span><br><span class="line"></span><br><span class="line">SOCKET(2)                  Linux Programmer&#x27;s Manual                 SOCKET(2)</span><br><span class="line"></span><br><span class="line">NAME</span><br><span class="line">       socket - create an endpoint for communication</span><br><span class="line"></span><br><span class="line">SYNOPSIS</span><br><span class="line">       #include &lt;sys/types.h&gt;          /* See NOTES */</span><br><span class="line">       #include &lt;sys/socket.h&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-socket函数"><a href="#1-socket函数" class="headerlink" title="1.socket函数"></a>1.socket函数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//创建一个套接字</span><br><span class="line">int socket(int af,int type,int protocol)</span><br></pre></td></tr></table></figure>
+<p>socket函数有三个参数：</p>
+<ul>
+<li>af：使用的地址族协议<ul>
+<li>AF_INET：使用ipv4形式的ip地址;</li>
+<li>AF_INET6：使用ipv6形式的ip地址;</li>
+</ul>
+</li>
+<li>type:<ul>
+<li>SOCK_SOTREAM：使用流式的地址传输协议;</li>
+<li>SOCK_DGRAM：用报式的地址传输协议;</li>
+</ul>
+</li>
+<li>portocol: 一般写0，使用默认的协议即可<ul>
+<li>SOCK_SOTREAM：tcp;</li>
+<li>SOCK_DGRAM：udp;</li>
+</ul>
+</li>
+</ul>
+<p>关于socket函数的返回值：socket函数的返回值是一个int类型文件描述符，成功返回文件描述符，失败则返回-1。（这里说明一下，在网络编程中，几乎所有的函数失败的返回值都是-1）</p>
+<h2 id="2-bind函数"><a href="#2-bind函数" class="headerlink" title="2.bind函数"></a>2.bind函数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//用于将文件描述符与ip地址和端口进行绑定</span><br><span class="line">int bind(socket s,const sockaddr* addr,int len)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>s：文件描述符，通过socket()函数的返回值获取;</li>
+<li>addr：将绑定的端口和ip地址记录在这个结构体中;<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">//这里说明一下sockaddr数据结构</span><br><span class="line"></span><br><span class="line">// 在写数据的时候不好用</span><br><span class="line">struct sockaddr &#123;</span><br><span class="line">	sa_family_t sa_family;       // 地址族协议, ipv4</span><br><span class="line">	char        sa_data[14];     // 端口(2字节) + IP地址(4字节) + 填充(8字节)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">struct sockaddr_in</span><br><span class="line">&#123;</span><br><span class="line">    sa_family_t sin_family;		/* 地址族协议: AF_INET */</span><br><span class="line">    in_port_t sin_port;         /* 端口, 2字节-&gt; 大端  */</span><br><span class="line">    struct in_addr sin_addr;    /* IP地址, 4字节 -&gt; 大端  */</span><br><span class="line">&#125;;  </span><br></pre></td></tr></table></figure></li>
+<li>len：addr结构体的大小，可以使用sizeof()函数获得;</li>
+<li>返回值：成功返回0，失败则返回-1;</li>
+</ul>
+<h2 id="3-listen函数"><a href="#3-listen函数" class="headerlink" title="3.listen函数"></a>3.listen函数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//用于给监听的套接字设置监听</span><br><span class="line">int listen(socket s,int backlog)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>s：文件描述符，通过socket()函数的返回值获取;</li>
+<li>backlog：设置最大连接请求数量;</li>
+<li>返回值：成功返回0，失败则返回-1;</li>
+</ul>
+<h2 id="4-accept函数"><a href="#4-accept函数" class="headerlink" title="4.accept函数"></a>4.accept函数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//接受连接</span><br><span class="line">int accept(socket s,sockaddr* addr,int len)</span><br><span class="line">//当无连接请求时，处于阻塞状态</span><br></pre></td></tr></table></figure>
+<ul>
+<li>s：文件描述符，通过socket()函数的返回值获取;</li>
+<li>addr：用于存储建立连接的客户端信息(ip地址和端口等);</li>
+<li>len：addr的大小;</li>
+<li>返回值：成功则返回用于通信的文件描述符，失败返回-1;</li>
+</ul>
+<h2 id="5-connection函数"><a href="#5-connection函数" class="headerlink" title="5.connection函数"></a>5.connection函数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//客户端建立连接函数</span><br><span class="line">int connection(socket s,const sockaddr* addr,int len)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>s：文件描述符，通过socket()函数的返回值获取;</li>
+<li>addr: 用于存储建立连接的客户端信息(ip地址和端口等);</li>
+<li>len: addr的大小;</li>
+<li>返回值：成功则返回0，失败返回-1;</li>
+</ul>
+<h2 id="6-send-write函数"><a href="#6-send-write函数" class="headerlink" title="6.send&#x2F;write函数"></a>6.send&#x2F;write函数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//发送数据</span><br><span class="line">ssize_t send(socket s,const void* buf,size_t len,int flags);</span><br><span class="line">ssize_t write(socket s, const void *buf, size_t len);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>s：用于通信的文件描述符，为accept()的返回值</li>
+<li>buf：传入参数，用于存储发送的数据</li>
+<li>len：buf的容量</li>
+<li>flags: 特殊的属性, 一般不使用, 指定为 0</li>
+<li>返回值： 发送成功返回实际的字节数与len相等，失败返回0</li>
+</ul>
+<h2 id="7-read-recv函数"><a href="#7-read-recv函数" class="headerlink" title="7.read&#x2F;recv函数"></a>7.read&#x2F;recv函数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//接收数据</span><br><span class="line">ssize_t read(int sockfd, void *buf, size_t size);</span><br><span class="line">ssize_t recv(int sockfd, void *buf, size_t size, int flags);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>s：用于通信的文件描述符，为accept()的返回值</li>
+<li>buf：传出参数，用于存储接受的数据</li>
+<li>len：buf的容量</li>
+<li>flags: 特殊的属性, 一般不使用, 指定为 0</li>
+<li>返回值： 大于零接受成功；等于0对方断开连接；-1失败</li>
+</ul>
+<p>如果连接没有断开，接收端接收不到数据，接收数据的函数会阻塞等待数据到达，数据到达后函数解除阻塞，开始接收数据，当发送端断开连接，接收端无法接收到任何数据，但是这时候就不会阻塞了，函数直接返回0。</p>
+
         </div>
 
         
