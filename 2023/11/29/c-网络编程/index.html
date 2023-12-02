@@ -247,7 +247,7 @@
 <h2 id="3-listen函数"><a href="#3-listen函数" class="headerlink" title="3.listen函数"></a>3.listen函数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//用于给监听的套接字设置监听</span><br><span class="line">int listen(socket s,int backlog)</span><br></pre></td></tr></table></figure>
 <ul>
 <li>s：文件描述符，通过socket()函数的返回值获取;</li>
-<li>backlog：设置最大连接请求数量;</li>
+<li>backlog：设置最大连接请求数量，最大128;</li>
 <li>返回值：成功返回0，失败则返回-1;</li>
 </ul>
 <h2 id="4-accept函数"><a href="#4-accept函数" class="headerlink" title="4.accept函数"></a>4.accept函数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//接受连接</span><br><span class="line">int accept(socket s,sockaddr* addr,int len)</span><br><span class="line">//当无连接请求时，处于阻塞状态</span><br></pre></td></tr></table></figure>
